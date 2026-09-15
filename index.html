@@ -1,145 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>松本の思い出アルバム</title>
 <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
-                 "Yu Gothic", sans-serif;
-    background: #f7f5f0;
-    color: #3f4548;
-  }
-  header {
-    padding: 42px 20px 30px;
-    text-align: center;
-    background: #e9eee9;
-  }
-  header .small { font-size: 13px; letter-spacing: 3px; }
-  h1 { margin: 10px 0 6px; font-size: 29px; font-weight: 600; }
-  header p { margin: 0; font-size: 14px; color: #69716e; }
-  main { max-width: 760px; margin: auto; padding: 24px 16px 50px; }
-  .intro {
-    background: white;
-    border-radius: 18px;
-    padding: 22px;
-    margin-bottom: 24px;
-    box-shadow: 0 3px 15px rgba(0,0,0,.05);
-  }
-  .intro h2 { margin: 0 0 10px; font-size: 20px; }
-  .intro p { margin: 0; line-height: 1.8; font-size: 14px; }
-  .album {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .card {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 3px 12px rgba(0,0,0,.06);
-  }
-  .photo {
-    aspect-ratio: 1 / 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e7e7e2;
-    color: #858985;
-    font-size: 13px;
-    text-align: center;
-    padding: 12px;
-  }
-  .caption { padding: 13px 14px 15px; }
-  .caption strong { display: block; font-size: 15px; margin-bottom: 5px; }
-  .caption span { font-size: 12px; color: #777d7a; line-height: 1.6; }
-  .note {
-    margin-top: 24px;
-    background: #eef2ed;
-    border-radius: 16px;
-    padding: 18px;
-    font-size: 13px;
-    line-height: 1.8;
-  }
-  footer {
-    text-align: center;
-    padding: 10px 20px 35px;
-    color: #8a908d;
-    font-size: 12px;
-  }
-  @media (max-width: 430px) {
-    h1 { font-size: 26px; }
-    .album { gap: 10px; }
-    .caption { padding: 11px; }
-  }
+*{box-sizing:border-box}body{margin:0;background:#f7f5f0;color:#40484a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+header{text-align:center;padding:38px 16px 28px;background:#e9eee9}header small{letter-spacing:3px}h1{margin:8px 0;font-size:28px;font-weight:600}header p{margin:0;font-size:13px;color:#69716e}
+main{max-width:760px;margin:auto;padding:20px 14px 50px}.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+button,.add{border:0;border-radius:12px;padding:12px 15px;background:#fff;color:#40484a;font-size:14px;box-shadow:0 2px 10px #00000012}.add{display:inline-block;cursor:pointer}input[type=file]{display:none}
+.album{display:grid;grid-template-columns:1fr 1fr;gap:13px}.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 3px 12px #00000010}
+.photo{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e7e7e2}.info{padding:12px}.info input{width:100%;border:1px solid #ddd;border-radius:9px;padding:9px;margin-bottom:8px;font-size:13px}
+.actions{display:flex;gap:6px}.actions button{padding:8px;font-size:12px;box-shadow:none;background:#f1f2ef}.empty{text-align:center;padding:40px 15px;color:#777}footer{text-align:center;color:#8a908d;font-size:12px;padding-bottom:30px}
+@media(max-width:430px){h1{font-size:25px}.album{gap:9px}}
 </style>
 </head>
 <body>
-
-<header>
-  <div class="small">MEMORIES</div>
-  <h1>松本の思い出</h1>
-  <p>旅の景色を、ゆっくり残すアルバム</p>
-</header>
-
+<header><small>MEMORIES</small><h1>松本の思い出</h1><p>写真を追加して、自分だけのアルバムにしよう</p></header>
 <main>
-  <section class="intro">
-    <h2>🏔️ 松本旅</h2>
-    <p>
-      松本で見つけた景色や、旅の途中で感じたことを残しておくページ。<br>
-      写真を見返したときに、その日の空気まで思い出せるように。
-    </p>
-  </section>
-
-  <section class="album">
-    <article class="card">
-      <div class="photo">ここに写真①を入れられます</div>
-      <div class="caption">
-        <strong>松本の景色</strong>
-        <span>旅で出会ったお気に入りの一枚</span>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="photo">ここに写真②を入れられます</div>
-      <div class="caption">
-        <strong>旅の風景</strong>
-        <span>そのときの思い出をひとこと</span>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="photo">ここに写真③を入れられます</div>
-      <div class="caption">
-        <strong>お気に入り</strong>
-        <span>また見に行きたい場所</span>
-      </div>
-    </article>
-
-    <article class="card">
-      <div class="photo">ここに写真④を入れられます</div>
-      <div class="caption">
-        <strong>旅の一場面</strong>
-        <span>忘れたくない瞬間</span>
-      </div>
-    </article>
-  </section>
-
-  <div class="note">
-    💭 <strong>旅のメモ</strong><br>
-    写真を増やしたり、場所やコメントを追加したりして、
-    自分だけの松本アルバムに育てていけます。
-  </div>
-</main>
-
-<footer>
-  Momoと一緒につくる 思い出アルバム
-</footer>
-
-</body>
-</html>
+<div class="controls"><label class="add" for="photos">📷 写真を追加</label><input id="photos" type="file" accept="image/*" multiple><button id="clear">🗑️ すべて削除</button></div>
+<div id="album" class="album"></div><div id="empty" class="empty">まだ写真がありません。<br>「📷 写真を追加」から選んでね。</div>
+</main><footer>Momoと一緒につくる 松本アルバム</footer>
+<script>
+const album=document.getElementById("album"),empty=document.getElementById("empty"),input=document.getElementById("photos");
+let photos=JSON.parse(localStorage.getItem("matsumotoAlbum")||"[]");
+function save(){localStorage.setItem("matsumotoAlbum",JSON.stringify(photos))}
+function render(){
+ album.innerHTML="";empty.style.display=photos.length?"none":"block";
+ photos.forEach((p,i)=>{
+  const c=document.createElement("article"),img=document.createElement("img"),info=document.createElement("div");
+  c.className="card";img.className="photo";img.src=p.src;img.alt="松本の写真";info.className="info";
+  const title=document.createElement("input"),note=document.createElement("input");
+  title.placeholder="タイトル";title.value=p.title||"";note.placeholder="ひとことメモ";note.value=p.note||"";
+  title.oninput=()=>{photos[i].title=title.value;save()};note.oninput=()=>{photos[i].note=note.value;save()};
+  const acts=document.createElement("div");acts.className="actions";
+  const rep=document.createElement("button");rep.textContent="🔄 写真を変更";rep.onclick=()=>replacePhoto(i);
+  const del=document.createElement("button");del.textContent="削除";del.onclick=()=>{if(confirm("この写真を削除する？")){photos.splice(i,1);save();render()}};
+  acts.append(rep,del);info.append(title,note,acts);c.append(img,info);album.append(c);
+ });
+}
+function replacePhoto(i){
+ const pick=document.createElement("input");pick.type="file";pick.accept="image/*";
+ pick.onchange=()=>{const f=pick.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{photos[i].src=r.result;save();render()};r.readAsDataURL(f)};pick.click();
+}
+input.onchange=()=>{[...input.files].forEach(f=>{const r=new FileReader();r.onload=()=>{photos.push({src:r.result,title:"",note:""});save();render()};r.readAsDataURL(f)});input.value=""};
+document.getElementById("clear").onclick=()=>{if(photos.length&&confirm("写真を全部削除する？")){photos=[];save();render()}};
+render();
+</script>
+</body></html>
