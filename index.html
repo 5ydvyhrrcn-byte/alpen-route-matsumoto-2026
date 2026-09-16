@@ -2,99 +2,143 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>松本の思い出</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;background:#f7f5f0;color:#3e4038}
-.wrap{max-width:760px;margin:auto;padding:18px 14px 40px}
-h1{text-align:center;font-size:28px;margin:8px 0 4px}.sub{text-align:center;color:#777;margin:0 0 20px}
-.hero{height:220px;border-radius:22px;overflow:hidden;background:#ddd;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-.hero img,.cover img{width:100%;height:100%;object-fit:cover}.placeholder{color:#888;padding:20px;text-align:center}
-.grid{display:grid;gap:14px}.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 3px 12px #00000012;cursor:pointer;position:relative}
-.cover{height:145px;background:#e4e2db;display:flex;align-items:center;justify-content:center}.cardbody{padding:14px}.card h2{margin:0 0 4px;font-size:20px}.card p{margin:0;color:#777;font-size:13px}
-.page{display:none}.page.active{display:block}.back{border:0;background:none;padding:6px 0;font-size:16px;color:#555}
-.page h2{font-size:25px;margin:8px 0 14px}.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-button,.pick{border:0;border-radius:12px;background:#fff;padding:10px 13px;box-shadow:0 2px 8px #00000010;font-size:14px}.pick{display:inline-block;cursor:pointer}.pick input{display:none}
-.album{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.photo{background:#fff;border-radius:15px;overflow:hidden}.photo img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.caption{padding:9px;font-size:13px}.caption input,.caption textarea{width:100%;border:1px solid #ddd;border-radius:8px;padding:7px;margin-top:5px;font:inherit}
-.empty{text-align:center;color:#999;padding:30px 10px}
-.backup{margin-top:30px;padding:16px;border-radius:18px;background:#ebe8df;text-align:center}.backup small{display:block;color:#777;margin-top:7px}
-.note{font-size:12px;color:#777;line-height:1.6;margin-top:12px}
+:root{--bg:#f6f3ed;--card:#fff;--ink:#332f2a;--muted:#77716a;--line:#e5ded4;--accent:#687b62}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+header{padding:34px 18px 24px;text-align:center;background:#eee9df}
+h1{margin:0 0 8px;font-size:28px;letter-spacing:.08em} .sub{color:var(--muted);font-size:13px}
+main{max-width:760px;margin:auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 3px 14px #00000008}
+.cover{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;background:#eee;display:block}
+.placeholder{aspect-ratio:16/9;border-radius:14px;background:#ebe6dd;display:flex;align-items:center;justify-content:center;color:#999}
+button,label.btn{appearance:none;border:0;border-radius:999px;background:var(--accent);color:white;padding:11px 15px;font-size:14px;display:inline-block;cursor:pointer}
+button.secondary,label.secondary{background:#e9e4dc;color:var(--ink)} button.danger{background:#9b6d68}
+input[type=file]{display:none}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+h2{font-size:21px;margin:4px 0 12px} h3{font-size:16px;margin:14px 0 7px}
+.note{font-size:12px;color:var(--muted);line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.photo{border:1px solid var(--line);border-radius:14px;padding:8px;background:#fff}
+.photo img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px}.photo input[type=text]{width:100%;margin-top:7px;padding:8px;border:1px solid var(--line);border-radius:9px;font-size:13px}
+.photo .actions{margin-top:6px}.photo button{padding:7px 10px;font-size:12px}
+.homebtn{display:block;width:100%;margin-top:12px;background:#fff;color:var(--ink);border:1px solid var(--line)}
+.savebox{border:2px solid #c9d0c4;background:#f8faf6}
+.savebox h2{color:#52614e}.bigsave{width:100%;font-size:16px;padding:14px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
-<div class="wrap">
-<section id="home">
-<h1>松本の思い出</h1><p class="sub">家族で過ごした旅のアルバム</p>
-<div id="homeHero" class="hero"><div class="placeholder">表紙写真を選べます</div></div>
-<div class="tools"><label class="pick">📷 表紙写真を選ぶ<input id="heroInput" type="file" accept="image/*"></label></div>
-<div id="cards" class="grid"></div>
-<div class="backup">
-<strong>💾 アルバムを保存</strong>
-<div class="note">写真を追加・変更したら「アルバムを保存」を押してね。写真をHTMLの中に直接埋め込むので、ブラウザの保存領域は使いません。</div>
-<button onclick="downloadAlbum()">📦 写真入りHTMLを保存</button>
-</div>
-</section>
-
-<div id="pages"></div>
-</div>
+<header>
+  <h1>松本の思い出</h1>
+  <div class="sub">写真を入れて、最後に「写真入りHTMLを保存」</div>
+</header>
+<main id="app"></main>
 <script>
-const places=[
- {id:"castle",title:"松本城",emoji:"🏯",desc:"国宝・松本城の思い出"},
- {id:"alpen",title:"アルペンルート",emoji:"🏔️",desc:"立山黒部アルペンルートの思い出"},
- {id:"daio",title:"大王わさび農場",emoji:"🌿",desc:"わさび田と安曇野の思い出"},
- {id:"kai",title:"界 アルプス",emoji:"🌿",desc:"界 アルプスでの思い出"}
-];
-let data={
-  hero:null,
-  castle:{cover:null,photos:[]},alpen:{cover:null,photos:[]},
-  daio:{cover:null,photos:[]},kai:{cover:null,photos:[]}
-};
-// If this file was generated from an already-saved album, embedded data can be inserted here.
-const embedded=null;
-if(embedded && embedded.version){data=embedded;}
+/*
+  完全自己完結版。
+  ブラウザ保存機能は一切使いません。
+  写真は保存時にHTMLへ直接埋め込みます。
+*/
+const EMBEDDED_DATA = {"title":"松本の思い出","cover":"","categories":[{"id":"castle","name":"松本城","entry":"","photos":[]},{"id":"alpen","name":"アルペンルート","entry":"","photos":[]},{"id":"daio","name":"大王わさび農場","entry":"","photos":[]},{"id":"kai","name":"界 アルプス","entry":"","photos":[]}]};
+let data = EMBEDDED_DATA;
 
-function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-function imgBox(src,cls=""){return src?`<img class="${cls}" src="${src}">`:`<div class="placeholder">📷 写真を追加</div>`}
-function renderHome(){
- document.getElementById("homeHero").innerHTML=imgBox(data.hero);
- const cards=document.getElementById("cards");
- cards.innerHTML=places.map(p=>`<div class="card" onclick="openPage('${p.id}')">
- <div class="cover">${imgBox(data[p.id].cover)}</div>
- <div class="cardbody"><h2>${p.emoji} ${p.title}</h2><p>${p.desc}　${data[p.id].photos.length}枚</p></div></div>`).join("");
+function esc(s){
+  return String(s ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 }
-function renderPage(id){
- const p=places.find(x=>x.id===id), d=data[id];
- document.getElementById("pages").innerHTML=`<section class="page active" id="page-${id}">
- <button class="back" onclick="goHome()">← 思い出一覧へ</button>
- <h2>${p.emoji} ${p.title}</h2>
- <div class="tools">
-  <label class="pick">📷 入口写真を選ぶ<input type="file" accept="image/*" onchange="setCover('${id}',this.files[0])"></label>
-  <label class="pick">📷 写真を追加<input type="file" accept="image/*" multiple onchange="addPhotos('${id}',this.files)"></label>
- </div>
- <div class="album">${d.photos.map((x,i)=>`<div class="photo"><img src="${x.src}"><div class="caption">
- <input value="${esc(x.title)}" placeholder="写真のタイトル" onchange="editPhoto('${id}',${i},'title',this.value)">
- <textarea rows="2" placeholder="思い出メモ" onchange="editPhoto('${id}',${i},'note',this.value)">${esc(x.note)}</textarea>
- <button onclick="removePhoto('${id}',${i})">🗑️ 削除</button>
- </div></div>`).join("")}</div>
- ${d.photos.length?`<div class="tools" style="margin-top:16px"><button onclick="downloadAlbum()">📦 この状態を写真入りHTMLで保存</button></div>`:`<div class="empty">まだ写真がありません。</div>`}
- </section>`;
+function readImage(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=()=>reject(r.error);
+    r.readAsDataURL(file);
+  });
 }
-function openPage(id){document.getElementById("home").style.display="none";renderPage(id);}
-function goHome(){document.getElementById("pages").innerHTML="";document.getElementById("home").style.display="block";renderHome();}
-function readFile(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});}
-async function setCover(id,f){if(!f)return;data[id].cover=await readFile(f);renderPage(id);}
-async function addPhotos(id,files){for(const f of files)data[id].photos.push({src:await readFile(f),title:"",note:""});renderPage(id);}
-function editPhoto(id,i,k,v){data[id].photos[i][k]=v;}
-function removePhoto(id,i){if(confirm("この写真を削除する？")){data[id].photos.splice(i,1);renderPage(id);}}
-document.getElementById("heroInput").onchange=async e=>{if(e.target.files[0]){data.hero=await readFile(e.target.files[0]);renderHome();}};
-function downloadAlbum(){
- const payload=JSON.stringify(data).replace(/</g,"\\u003c");
- const final=document.documentElement.outerHTML.replace("null",payload);
- const blob=new Blob(["<!doctype html>\n"+final],{type:"text/html;charset=utf-8"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="matsumoto_album_with_photos.html";a.click();
- setTimeout(()=>URL.revokeObjectURL(a.href),1000);
- alert("写真入りのHTMLを保存したよ📦\n次からは保存したHTMLを開けばOK！");
+function findCat(id){return data.categories.find(c=>c.id===id)}
+function render(){
+  const app=document.getElementById("app");
+  app.innerHTML = `
+    <section class="card">
+      ${data.cover ? `<img class="cover" src="${data.cover}">` : `<div class="placeholder">表紙写真を入れてね</div>`}
+      <div class="actions">
+        <label class="btn" for="coverFile">📷 表紙写真を選ぶ</label>
+        <input id="coverFile" type="file" accept="image/*">
+      </div>
+    </section>
+    ${data.categories.map(c=>`
+      <section class="card">
+        <h2>${esc(c.name)}</h2>
+        ${c.entry ? `<img class="cover" src="${c.entry}">` : `<div class="placeholder">入口・表紙写真</div>`}
+        <div class="actions">
+          <label class="btn" for="entry-${c.id}">📷 入口写真</label>
+          <input id="entry-${c.id}" type="file" accept="image/*">
+          <label class="btn secondary" for="photos-${c.id}">＋ 写真を追加</label>
+          <input id="photos-${c.id}" type="file" accept="image/*" multiple>
+        </div>
+        <div class="grid">${c.photos.map((p,i)=>`
+          <div class="photo">
+            <img src="${p.src}">
+            <input type="text" value="${esc(p.title||"")}" placeholder="写真のタイトル" data-title="${c.id}" data-index="${i}">
+            <div class="actions">
+              <button class="danger" data-delete="${c.id}" data-index="${i}">削除</button>
+            </div>
+          </div>`).join("")}</div>
+        <button class="homebtn" data-top>↑ 上に戻る</button>
+      </section>
+    `).join("")}
+    <section class="card savebox">
+      <h2>💾 アルバムを保存</h2>
+      <p class="note">このボタンを押すと、今入っている写真をHTMLの中へ直接入れた「新しいアルバム.html」を作ります。保存したHTMLを開けば、写真も一緒に表示されます。</p>
+      <button class="bigsave" id="save">📦 写真入りHTMLを保存</button>
+      <p class="note">※ 写真を追加しただけでは端末には保存されません。写真を入れたら、必ずこのボタンでHTMLを保存してね。</p>
+    </section>
+  `;
+  bind();
 }
-renderHome();
+function bind(){
+  document.getElementById("coverFile").onchange=async e=>{
+    if(e.target.files[0]){data.cover=await readImage(e.target.files[0]);render();}
+  };
+  data.categories.forEach(c=>{
+    document.getElementById("entry-"+c.id).onchange=async e=>{
+      if(e.target.files[0]){c.entry=await readImage(e.target.files[0]);render();}
+    };
+    document.getElementById("photos-"+c.id).onchange=async e=>{
+      for(const f of e.target.files){
+        c.photos.push({src:await readImage(f),title:""});
+      }
+      render();
+    };
+  });
+  document.querySelectorAll("[data-title]").forEach(el=>{
+    el.oninput=()=>{
+      const c=findCat(el.dataset.title); c.photos[Number(el.dataset.index)].title=el.value;
+    };
+  });
+  document.querySelectorAll("[data-delete]").forEach(b=>{
+    b.onclick=()=>{
+      const c=findCat(b.dataset.delete); c.photos.splice(Number(b.dataset.index),1); render();
+    };
+  });
+  document.querySelectorAll("[data-top]").forEach(b=>b.onclick=()=>scrollTo({top:0,behavior:"smooth"}));
+  document.getElementById("save").onclick=saveHtml;
+}
+function saveHtml(){
+  const json=JSON.stringify(data).replace(/</g,"\\u003c");
+  const source=document.documentElement.outerHTML.replace(
+    /const EMBEDDED_DATA = {"title":"松本の思い出","cover":"","categories":[{"id":"castle","name":"松本城","entry":"","photos":[]},{"id":"alpen","name":"アルペンルート","entry":"","photos":[]},{"id":"daio","name":"大王わさび農場","entry":"","photos":[]},{"id":"kai","name":"界 アルプス","entry":"","photos":[]}]};?/,
+    "const EMBEDDED_DATA = "+json+";"
+  );
+  // The template contains the placeholder below instead of live data.
+  const blob=new Blob(["<!doctype html>\n"+source],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="松本の思い出_写真入り.html";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  alert("写真入りHTMLを作ったよ。『ファイル』のダウンロードから開いて確認してね。");
+}
+render();
 </script>
-</body></html>
+</body>
+</html>
