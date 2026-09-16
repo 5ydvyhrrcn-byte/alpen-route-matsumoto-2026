@@ -45,7 +45,7 @@ input[type=file]{display:none}
 footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
 @media(min-width:600px){.categories{grid-template-columns:repeat(3,1fr)}.category-photo{height:180px}}
 </style>
-</head>
+<style>.backup-box{margin:28px 0 10px;padding:14px;border-radius:16px;background:#f5f3ee;text-align:center}.backup-box p{font-size:13px;margin:8px}.backup-box button,.import-label{display:inline-block;margin:4px;padding:10px 14px;border:0;border-radius:12px;background:white}.import-label input{display:none}</style></head>
 <body>
 <header>
 <div class="hero">
@@ -71,7 +71,12 @@ footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
     <button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('kai')">📷 入口写真を変更</button>
     <div class="category-text"><span class="emoji">♨️</span><h2>界 アルプス</h2><span class="count" id="count-kai"></span><p>宿・温泉・ごはんの思い出</p></div>
   </div>
-  <div class="category" onclick="openCategory('alpen')">
+  <div class="category" onclick="openCategory('daio')">
+<div class="category-photo" id="daioCover"></div>
+<button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('daio')">📷 入口写真を変更</button>
+<div class="category-text"><span class="emoji">🌿</span><h2>大王わさび農場</h2><span class="count" id="count-daio"></span><p>わさび田と安曇野の思い出</p></div>
+</div>
+<div class="category" onclick="openCategory('alpen')">
     <div class="category-photo" id="alpenCover"></div>
     <button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('alpen')">📷 入口写真を変更</button>
     <div class="category-text"><span class="emoji">🚡</span><h2>アルペンルート</h2><span class="count" id="count-alpen"></span><p>山・黒部ダム・旅の景色</p></div>
@@ -80,14 +85,22 @@ footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
 <div class="memory"><strong>💭 旅の思い出</strong><textarea id="memory" placeholder="松本の旅で感じたことを書いておこう…"></textarea></div>
 </div>
 
+
+<div class="backup-box">
+<strong>💾 写真のバックアップ</strong>
+<p>写真を追加したら、念のためバックアップを保存しておこう。</p>
+<button onclick="exportAlbum()">📦 バックアップ保存</button>
+<label class="import-label">📥 復元<input id="importAlbumInput" type="file" accept=".json,application/json" onchange="importAlbum(this.files[0])"></label>
+</div>
 <div id="castle" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🏯 松本城</h2><div class="toolbar"><label for="castleInput">📷 写真を追加</label><input id="castleInput" type="file" accept="image/*" multiple></div><div id="castleAlbum" class="album"></div><div id="castleEmpty" class="empty">まだ写真がありません。</div></div>
 <div id="kai" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>♨️ 界 アルプス</h2><div class="toolbar"><label for="kaiInput">📷 写真を追加</label><input id="kaiInput" type="file" accept="image/*" multiple></div><div id="kaiAlbum" class="album"></div><div id="kaiEmpty" class="empty">まだ写真がありません。</div></div>
+<div id="daio" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🌿 大王わさび農場</h2><div class="toolbar"><label for="daioInput">📷 写真を追加</label><input id="daioInput" type="file" accept="image/*" multiple></div><div id="daioAlbum" class="album"></div><div id="daioEmpty" class="empty">まだ写真がありません。</div></div>
 <div id="alpen" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🚡 アルペンルート</h2><div class="toolbar"><label for="alpenInput">📷 写真を追加</label><input id="alpenInput" type="file" accept="image/*" multiple></div><div id="alpenAlbum" class="album"></div><div id="alpenEmpty" class="empty">まだ写真がありません。</div></div>
 </main>
 <footer>Momoと一緒につくる 松本アルバム</footer>
 
 <script>
-const keys=["castle","kai","alpen"];
+const keys=["castle","kai","alpen","daio"];
 let data={};
 keys.forEach(k=>data[k]=JSON.parse(localStorage.getItem("matsumoto_"+k)||"[]"));
 
@@ -136,6 +149,29 @@ function replacePhoto(k,i){readImage(src=>{data[k][i].src=src;save(k);render(k)}
 keys.forEach(k=>document.getElementById(k+"Input").onchange=e=>{addPhotos(k,e.target.files);e.target.value=""});
 function updateCounts(){keys.forEach(k=>document.getElementById("count-"+k).textContent=data[k].length+"枚")}
 renderCovers();updateCounts();
+const daioInput=document.getElementById("daioInput");
+if(daioInput) daioInput.onchange=e=>{addPhotos("daio",e.target.files);e.target.value=""};
+</script>
+
+<script>
+async function exportAlbum(){
+ const all={version:2,photos:{},covers:{}};
+ for(const k of keys){all.photos[k]=JSON.parse(localStorage.getItem(PREFIX+k)||"[]");all.covers[k]=JSON.parse(localStorage.getItem(PREFIX+k+"_cover")||"null");}
+ const blob=new Blob([JSON.stringify(all)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="matsumoto_album_backup.json";a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function importAlbum(file){
+ if(!file)return;
+ try{
+  const all=JSON.parse(await file.text());
+  for(const k of keys){
+   if(all.photos?.[k])localStorage.setItem(PREFIX+k,JSON.stringify(all.photos[k]));
+   if(all.covers?.[k])localStorage.setItem(PREFIX+k+"_cover",JSON.stringify(all.covers[k]));
+  }
+  location.reload();
+ }catch(e){alert("バックアップを読み込めませんでした。")}
+}
 </script>
 </body>
 </html>
