@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>松本の思い出｜写真保存強化版</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f7f5f0;color:#3f4748;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+header{text-align:center;padding:34px 16px 28px;background:#e8eee9}
+.hero{max-width:760px;margin:0 auto 18px;position:relative;border-radius:20px;overflow:hidden;background:#dfe5df;box-shadow:0 5px 18px #00000012}
+.hero img{width:100%;height:230px;object-fit:cover;display:block}
+.hero .placeholder{height:230px;display:flex;align-items:center;justify-content:center;color:#737b77;font-size:13px}
+.cover-btn{position:absolute;right:10px;bottom:10px;border:0;border-radius:11px;padding:9px 12px;background:#fffffff0;color:#40484a;font-size:12px;box-shadow:0 2px 8px #0002}
+header small{letter-spacing:4px;font-size:11px;color:#68736d}
+h1{margin:10px 0 6px;font-size:29px;font-weight:600}
+header p{margin:0;font-size:13px;color:#6d7672}
+main{max-width:760px;margin:auto;padding:20px 15px 50px}
+.section-title{text-align:center;margin:4px 0 17px;font-size:18px}
+.categories{display:grid;grid-template-columns:1fr;gap:15px}
+.category{position:relative;border:0;width:100%;background:#fff;border-radius:18px;padding:0;text-align:left;overflow:hidden;box-shadow:0 3px 14px #0000000d;cursor:pointer}
+.category-photo{height:150px;background:#e7e7e2;position:relative}
+.category-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.category-placeholder{height:100%;display:flex;align-items:center;justify-content:center;color:#858985;font-size:13px}
+.category-change{position:absolute;right:9px;top:9px;border:0;border-radius:10px;padding:7px 9px;background:#fffffff0;font-size:11px;z-index:2}
+.category-text{padding:15px 17px 17px}
+.category .emoji{font-size:25px;vertical-align:middle;margin-right:8px}
+.category h2{display:inline;margin:0;font-size:18px;font-weight:600}
+.category p{margin:7px 0 0;font-size:12px;color:#7a817e}
+.count{float:right;font-size:11px;color:#8a908d;margin-top:6px}
+.page{display:none}.page.active{display:block}
+.back{border:0;background:transparent;padding:5px 0 16px;font-size:14px;color:#66716c;cursor:pointer}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.toolbar label,.toolbar button{border:0;border-radius:11px;padding:10px 13px;background:#fff;font-size:13px;color:#424b4c;box-shadow:0 2px 8px #0000000d;cursor:pointer}
+input[type=file]{display:none}
+.album{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#fff;border-radius:15px;overflow:hidden;box-shadow:0 3px 10px #0000000d}
+.photo{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e7e7e2}
+.info{padding:11px}.info input{width:100%;border:1px solid #ddd;border-radius:8px;padding:8px;margin-bottom:7px;font-size:12px}
+.actions{display:flex;gap:5px}.actions button{border:0;border-radius:8px;padding:7px 6px;font-size:11px;background:#f0f2ef;cursor:pointer}
+.empty{text-align:center;padding:32px 12px;color:#818783;font-size:13px}
+.memory{margin-top:25px;background:#eef2ed;border-radius:16px;padding:18px;font-size:13px;line-height:1.8}
+.memory textarea{width:100%;min-height:110px;border:1px solid #dfe3df;border-radius:10px;padding:10px;margin-top:9px;font:inherit;background:white}
+footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
+@media(min-width:600px){.categories{grid-template-columns:repeat(3,1fr)}.category-photo{height:180px}}
+</style>
+</head>
+<body>
+<header>
+<div class="hero">
+  <div id="coverArea" class="placeholder">表紙になる写真を入れてね 📷</div>
+  <button class="cover-btn" onclick="chooseCover()">📷 表紙写真を変更</button>
+</div>
+<small>MEMORIES OF MATSUMOTO</small>
+<h1>🏔️ 松本の思い出</h1>
+<p>旅で出会った景色を、ここに残そう</p>
+</header>
+
+<main>
+<div id="home" class="page active">
+<div class="section-title">思い出を選んでね</div>
+<div class="categories">
+  <div class="category" onclick="openCategory('castle')">
+    <div class="category-photo" id="castleCover"></div>
+    <button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('castle')">📷 入口写真を変更</button>
+    <div class="category-text"><span class="emoji">🏯</span><h2>松本城</h2><span class="count" id="count-castle"></span><p>お城と松本の街の思い出</p></div>
+  </div>
+<div class="category" onclick="openCategory('alpen')">
+    <div class="category-photo" id="alpenCover"></div>
+    <button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('alpen')">📷 入口写真を変更</button>
+    <div class="category-text"><span class="emoji">🚡</span><h2>アルペンルート</h2><span class="count" id="count-alpen"></span><p>山・黒部ダム・旅の景色</p></div>
+  </div>
+  <div class="category" onclick="openCategory('kai')">
+    <div class="category-photo" id="kaiCover"></div>
+    <button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('kai')">📷 入口写真を変更</button>
+    <div class="category-text"><span class="emoji">♨️</span><h2>界 アルプス</h2><span class="count" id="count-kai"></span><p>宿・温泉・ごはんの思い出</p></div>
+  </div>
+  <div class="category" onclick="openCategory('other')">
+    <div class="category-photo" id="otherCover"></div>
+    <button class="category-change" onclick="event.stopPropagation();chooseCategoryCover('other')">📷 入口写真を変更</button>
+    <div class="category-text"><span class="emoji">🌿</span><h2>そのほか</h2><span class="count" id="count-other"></span><p>そのほかの旅の思い出</p></div>
+  </div>
+  
+</div>
+<div class="memory"><strong>💭 旅の思い出</strong><textarea id="memory" placeholder="松本の旅で感じたことを書いておこう…"></textarea></div>
+</div>
+
+<div id="castle" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🏯 松本城</h2><div class="toolbar"><label for="castleInput">📷 写真を追加</label><input id="castleInput" type="file" accept="image/*" multiple></div><div id="castleAlbum" class="album"></div><div id="castleEmpty" class="empty">まだ写真がありません。</div></div>
+<div id="kai" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>♨️ 界 アルプス</h2><div class="toolbar"><label for="kaiInput">📷 写真を追加</label><input id="kaiInput" type="file" accept="image/*" multiple></div><div id="kaiAlbum" class="album"></div><div id="kaiEmpty" class="empty">まだ写真がありません。</div></div>
+<div id="other" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🌿 そのほか</h2><div class="toolbar"><label for="otherInput">📷 写真を追加</label><input id="otherInput" type="file" accept="image/*" multiple></div><div id="otherAlbum" class="album"></div><div id="otherEmpty" class="empty">まだ写真がありません。</div></div>
+<div id="alpen" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🚡 アルペンルート</h2><div class="toolbar"><label for="alpenInput">📷 写真を追加</label><input id="alpenInput" type="file" accept="image/*" multiple></div><div id="alpenAlbum" class="album"></div><div id="alpenEmpty" class="empty">まだ写真がありません。</div></div>
+</main>
+<section style="max-width:760px;margin:0 auto 35px;padding:18px 15px;"><div style="background:#eef2ed;border:2px solid #d7e0d4;border-radius:16px;padding:20px;text-align:center;"><h2 style="margin:0 0 8px;font-size:21px;">📦 アルバムを保存</h2><p style="margin:0 0 14px;color:#6d7672;font-size:13px;line-height:1.7;">写真を追加したら、このボタンで写真入りのHTMLを作れます。</p><button onclick="savePhotoHTML()" style="border:0;border-radius:12px;padding:13px 22px;background:#667a67;color:white;font-size:14px;cursor:pointer;">📦 写真入りHTMLを保存</button></div></section>
+<footer>Momoと一緒につくる 松本アルバム</footer>
+
+<script>
+const keys=["castle","kai","alpen","other"];
+let data=window.__EMBEDDED_DATA__ || {castle:[],kai:[],alpen:[],other:[]};
+
+const DB_NAME="matsumoto_album_db";
+const DB_VERSION=1;
+let db;
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=()=>{
+      const d=req.result;
+      if(!d.objectStoreNames.contains("photos")) d.createObjectStore("photos");
+      if(!d.objectStoreNames.contains("settings")) d.createObjectStore("settings");
+    };
+    req.onsuccess=()=>{db=req.result;resolve(db)};
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+function idbGet(store,key){
+  return new Promise((resolve,reject)=>{
+    const req=db.transaction(store,"readonly").objectStore(store).get(key);
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+function idbSet(store,key,value){
+  return new Promise((resolve,reject)=>{
+    const req=db.transaction(store,"readwrite").objectStore(store).put(value,key);
+    req.onsuccess=()=>resolve();
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function loadAll(){
+  for(const k of keys){
+    const saved=await idbGet("photos",k);
+    if(saved) data[k]=saved;
+    else{
+      // Migrate yesterday's localStorage data if it exists.
+      try{
+        const old=JSON.parse(localStorage.getItem("matsumoto_"+k)||"[]");
+        if(old.length){data[k]=old;await idbSet("photos",k,old);}
+      }catch(e){}
+    }
+  }
+
+  const memorySaved=await idbGet("settings","memory");
+  const memory=document.getElementById("memory");
+  memory.value=memorySaved ?? localStorage.getItem("matsumoto_memory") ?? (window.__EMBEDDED_SETTINGS__?.memory || "") ?? "";
+  memory.oninput=async()=>{await idbSet("settings","memory",memory.value)};
+
+  // Migrate cover images from yesterday's version.
+  const cover=await idbGet("settings","cover");
+  if(!cover && localStorage.getItem("matsumoto_cover"))
+    await idbSet("settings","cover",localStorage.getItem("matsumoto_cover"));
+  for(const k of keys){
+    const ck="cover_"+k;
+    if(!(await idbGet("settings",ck)) && localStorage.getItem("matsumoto_cover_"+k))
+      await idbSet("settings",ck,localStorage.getItem("matsumoto_cover_"+k));
+  }
+
+  await renderCovers();
+  const otherInput=document.getElementById("otherInput");
+if(otherInput) otherInput.onchange=e=>{addPhotos("other",e.target.files);e.target.value=""};
+updateCounts();
+}
+
+async function save(k){await idbSet("photos",k,data[k])}
+
+function readImage(callback){
+  const p=document.createElement("input");
+  p.type="file";p.accept="image/*";
+  p.onchange=()=>{
+    const f=p.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>callback(r.result);
+    r.readAsDataURL(f);
+  };
+  p.click();
+}
+
+function chooseCover(){
+  readImage(async src=>{
+    try{ if(db) await idbSet("settings","cover",src); }catch(e){}
+    renderCovers();
+  });
+}
+function chooseCategoryCover(k){
+  readImage(async src=>{
+    try{ if(db) await idbSet("settings","cover_"+k,src); }catch(e){}
+    renderCovers();
+  });
+}
+
+async function renderCovers(){
+  const cover=(await idbGet("settings","cover")) || window.__EMBEDDED_SETTINGS__?.cover;
+  const area=document.getElementById("coverArea");
+  if(cover) area.outerHTML='<img id="coverArea" src="'+cover+'" alt="松本の表紙写真">';
+  else area.innerHTML="表紙になる写真を入れてね 📷";
+
+  for(const k of keys){
+    const box=document.getElementById(k+"Cover");
+    const src=(await idbGet("settings","cover_"+k)) || window.__EMBEDDED_SETTINGS__?.covers?.[k];
+    box.innerHTML=src?'<img src="'+src+'" alt="">':'<div class="category-placeholder">入口の写真を入れてね 📷</div>';
+  }
+}
+
+function openCategory(k){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(k).classList.add("active");
+  render(k);
+}
+function goHome(){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("home").classList.add("active");
+  updateCounts();renderCovers();
+}
+
+function render(k){
+  const album=document.getElementById(k+"Album"),empty=document.getElementById(k+"Empty");
+  album.innerHTML="";empty.style.display=data[k].length?"none":"block";
+  data[k].forEach((p,i)=>{
+    const c=document.createElement("article"),img=document.createElement("img"),info=document.createElement("div");
+    c.className="card";img.className="photo";img.src=p.src;img.alt="松本の写真";info.className="info";
+    const title=document.createElement("input"),note=document.createElement("input");
+    title.placeholder="タイトル";title.value=p.title||"";
+    note.placeholder="ひとことメモ";note.value=p.note||"";
+    title.oninput=()=>{data[k][i].title=title.value;save(k)};
+    note.oninput=()=>{data[k][i].note=note.value;save(k)};
+    const acts=document.createElement("div");acts.className="actions";
+    const rep=document.createElement("button");rep.textContent="🔄 写真を変更";rep.onclick=()=>replacePhoto(k,i);
+    const del=document.createElement("button");del.textContent="削除";
+    del.onclick=async()=>{
+      if(confirm("この写真を削除する？")){
+        data[k].splice(i,1);await save(k);render(k);
+      }
+    };
+    acts.append(rep,del);info.append(title,note,acts);c.append(img,info);album.append(c);
+  });
+  updateCounts();
+}
+
+function addPhotos(k,files){
+  [...files].forEach(f=>{
+    const r=new FileReader();
+    r.onload=async()=>{
+      data[k].push({src:r.result,title:"",note:""});
+      await save(k);render(k);
+    };
+    r.readAsDataURL(f);
+  });
+}
+function replacePhoto(k,i){
+  readImage(async src=>{data[k][i].src=src;await save(k);render(k)});
+}
+function bindInputs(){
+  keys.forEach(k=>{
+    const input=document.getElementById(k+"Input");
+    if(input) input.onchange=e=>{
+      addPhotos(k,e.target.files);
+      e.target.value="";
+    };
+  });
+}
+
+async function savePhotoHTML(){
+  const settings={memory:document.getElementById("memory")?.value || "",cover:(await idbGet("settings","cover")) || window.__EMBEDDED_SETTINGS__?.cover || null,covers:{}};
+  for(const k of keys) settings.covers[k]=(await idbGet("settings","cover_"+k)) || window.__EMBEDDED_SETTINGS__?.covers?.[k] || null;
+  const safeData=JSON.stringify(data).replace(/<\/script/gi,"<\\/script");
+  const safeSettings=JSON.stringify(settings).replace(/<\/script/gi,"<\\/script");
+  const html="<!doctype html>\n"+document.documentElement.outerHTML;
+  const boot='<script>window.__EMBEDDED_DATA__='+safeData+';window.__EMBEDDED_SETTINGS__='+safeSettings+';</script>';
+  const out=html.replace(/<script>/i,boot+'<script>');
+  const blob=new Blob([out],{type:"text/html;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="matsumoto_album_photo.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+function updateCounts(){
+  keys.forEach(k=>document.getElementById("count-"+k).textContent=data[k].length+"枚");
+}
+
+async function startAlbum(){
+  bindInputs();
+  try{
+    await openDB();
+    await loadAll();
+  }catch(err){
+    console.error(err);
+    // Even if storage is unavailable, keep navigation and photo selection usable.
+    await renderCovers();
+    updateCounts();
+  }
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",startAlbum);
+}else{
+  startAlbum();
+}
+</script>
+</body>
+</html>
