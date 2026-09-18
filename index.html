@@ -166,14 +166,32 @@ updateCounts();
 
 async function save(k){await idbSet("photos",k,data[k])}
 
+function compressImage(file, callback){
+  const r=new FileReader();
+  r.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1800;
+      let w=img.naturalWidth, h=img.naturalHeight;
+      if(w>max || h>max){
+        const scale=Math.min(max/w,max/h);
+        w=Math.round(w*scale); h=Math.round(h*scale);
+      }
+      const c=document.createElement("canvas");
+      c.width=w; c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      callback(c.toDataURL("image/jpeg",0.78));
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
 function readImage(callback){
   const p=document.createElement("input");
   p.type="file";p.accept="image/*";
   p.onchange=()=>{
     const f=p.files[0];if(!f)return;
-    const r=new FileReader();
-    r.onload=()=>callback(r.result);
-    r.readAsDataURL(f);
+    compressImage(f,callback);
   };
   p.click();
 }
@@ -241,12 +259,10 @@ function render(k){
 
 function addPhotos(k,files){
   [...files].forEach(f=>{
-    const r=new FileReader();
-    r.onload=async()=>{
-      data[k].push({src:r.result,title:"",note:""});
+    compressImage(f,async src=>{
+      data[k].push({src,title:"",note:""});
       await save(k);render(k);
-    };
-    r.readAsDataURL(f);
+    });
   });
 }
 function replacePhoto(k,i){
@@ -268,9 +284,8 @@ async function savePhotoHTML(){
   const safeData=JSON.stringify(data).replace(/<\/script/gi,"<\\/script");
   const safeSettings=JSON.stringify(settings).replace(/<\/script/gi,"<\\/script");
   const html="<!doctype html>\n"+document.documentElement.outerHTML;
-  const boot='<script>window.__EMBEDDED_DATA__='+safeData+';window.__EMBEDDED_SETTINGS__='+safeSettings+';<\/script>';
+  const boot='<script>window.__EMBEDDED_DATA__='+safeData+';window.__EMBEDDED_SETTINGS__='+safeSettings+';<'+"/script>";
   const out=html.replace(/<script>/i,boot+'<script>');
-
   const blob=new Blob([out],{type:"text/html;charset=utf-8"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="matsumoto_album_photo.html";a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -288,8 +303,7 @@ async function startAlbum(){
     await loadAll();
   }catch(err){
     console.error(err);
-    // Storage unavailable? Keep the visible album and navigation usable.
-    try{ renderCovers(); updateCounts(); }catch(e){}
+    try{renderCovers();updateCounts();}catch(e){}
   }
 }
 if(document.readyState==="loading"){
