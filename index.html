@@ -91,11 +91,12 @@ footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
 <div id="other" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🌿 そのほか</h2><div class="toolbar"><label for="otherInput">📷 写真を追加</label><input id="otherInput" type="file" accept="image/*" multiple></div><div id="otherAlbum" class="album"></div><div id="otherEmpty" class="empty">まだ写真がありません。</div></div>
 <div id="alpen" class="page"><button class="back" onclick="goHome()">← 思い出一覧へ</button><h2>🚡 アルペンルート</h2><div class="toolbar"><label for="alpenInput">📷 写真を追加</label><input id="alpenInput" type="file" accept="image/*" multiple></div><div id="alpenAlbum" class="album"></div><div id="alpenEmpty" class="empty">まだ写真がありません。</div></div>
 </main>
+<section style="max-width:760px;margin:0 auto 35px;padding:18px 15px;"><div style="background:#eef2ed;border:2px solid #d7e0d4;border-radius:16px;padding:20px;text-align:center;"><h2 style="margin:0 0 8px;font-size:21px;">📦 アルバムを保存</h2><p style="margin:0 0 14px;color:#6d7672;font-size:13px;line-height:1.7;">写真を追加したら、このボタンで写真入りのHTMLを作れます。</p><button onclick="savePhotoHTML()" style="border:0;border-radius:12px;padding:13px 22px;background:#667a67;color:white;font-size:14px;cursor:pointer;">📦 写真入りHTMLを保存</button></div></section>
 <footer>Momoと一緒につくる 松本アルバム</footer>
 
 <script>
 const keys=["castle","kai","alpen","other"];
-let data={castle:[],kai:[],alpen:[],other:[]};
+let data=window.__EMBEDDED_DATA__ || {castle:[],kai:[],alpen:[],other:[]};
 
 const DB_NAME="matsumoto_album_db";
 const DB_VERSION=1;
@@ -144,7 +145,7 @@ async function loadAll(){
 
   const memorySaved=await idbGet("settings","memory");
   const memory=document.getElementById("memory");
-  memory.value=memorySaved ?? localStorage.getItem("matsumoto_memory") ?? "";
+  memory.value=memorySaved ?? localStorage.getItem("matsumoto_memory") ?? (window.__EMBEDDED_SETTINGS__?.memory || "") ?? "";
   memory.oninput=async()=>{await idbSet("settings","memory",memory.value)};
 
   // Migrate cover images from yesterday's version.
@@ -185,14 +186,14 @@ function chooseCategoryCover(k){
 }
 
 async function renderCovers(){
-  const cover=await idbGet("settings","cover");
+  const cover=(await idbGet("settings","cover")) || window.__EMBEDDED_SETTINGS__?.cover;
   const area=document.getElementById("coverArea");
   if(cover) area.outerHTML='<img id="coverArea" src="'+cover+'" alt="松本の表紙写真">';
   else area.innerHTML="表紙になる写真を入れてね 📷";
 
   for(const k of keys){
     const box=document.getElementById(k+"Cover");
-    const src=await idbGet("settings","cover_"+k);
+    const src=(await idbGet("settings","cover_"+k)) || window.__EMBEDDED_SETTINGS__?.covers?.[k];
     box.innerHTML=src?'<img src="'+src+'" alt="">':'<div class="category-placeholder">入口の写真を入れてね 📷</div>';
   }
 }
@@ -248,6 +249,21 @@ function replacePhoto(k,i){
 keys.forEach(k=>document.getElementById(k+"Input").onchange=e=>{
   addPhotos(k,e.target.files);e.target.value="";
 });
+
+async function savePhotoHTML(){
+  const settings={memory:document.getElementById("memory")?.value || "",cover:(await idbGet("settings","cover")) || window.__EMBEDDED_SETTINGS__?.cover || null,covers:{}};
+  for(const k of keys) settings.covers[k]=(await idbGet("settings","cover_"+k)) || window.__EMBEDDED_SETTINGS__?.covers?.[k] || null;
+  const safeData=JSON.stringify(data).replace(/<\/script/gi,"<\\/script");
+  const safeSettings=JSON.stringify(settings).replace(/<\/script/gi,"<\\/script");
+  const html="<!doctype html>\n"+document.documentElement.outerHTML;
+  const boot='<script>window.__EMBEDDED_DATA__='+safeData+';window.__EMBEDDED_SETTINGS__='+safeSettings+';</script>';
+  const out=html.replace(/<script>/i,boot+'<script>');
+  const blob=new Blob([out],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="matsumoto_album_photo.html";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  alert("写真入りHTMLを作ったよ。『ファイルに保存』が表示されたら保存してね📦");
+}
+
 function updateCounts(){
   keys.forEach(k=>document.getElementById("count-"+k).textContent=data[k].length+"枚");
 }
