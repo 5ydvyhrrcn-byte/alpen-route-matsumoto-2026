@@ -179,10 +179,16 @@ function readImage(callback){
 }
 
 function chooseCover(){
-  readImage(async src=>{await idbSet("settings","cover",src);renderCovers()});
+  readImage(async src=>{
+    try{ if(db) await idbSet("settings","cover",src); }catch(e){}
+    renderCovers();
+  });
 }
 function chooseCategoryCover(k){
-  readImage(async src=>{await idbSet("settings","cover_"+k,src);renderCovers()});
+  readImage(async src=>{
+    try{ if(db) await idbSet("settings","cover_"+k,src); }catch(e){}
+    renderCovers();
+  });
 }
 
 async function renderCovers(){
@@ -246,9 +252,15 @@ function addPhotos(k,files){
 function replacePhoto(k,i){
   readImage(async src=>{data[k][i].src=src;await save(k);render(k)});
 }
-keys.forEach(k=>document.getElementById(k+"Input").onchange=e=>{
-  addPhotos(k,e.target.files);e.target.value="";
-});
+function bindInputs(){
+  keys.forEach(k=>{
+    const input=document.getElementById(k+"Input");
+    if(input) input.onchange=e=>{
+      addPhotos(k,e.target.files);
+      e.target.value="";
+    };
+  });
+}
 
 async function savePhotoHTML(){
   const settings={memory:document.getElementById("memory")?.value || "",cover:(await idbGet("settings","cover")) || window.__EMBEDDED_SETTINGS__?.cover || null,covers:{}};
@@ -259,18 +271,38 @@ async function savePhotoHTML(){
   const boot='<script>window.__EMBEDDED_DATA__='+safeData+';window.__EMBEDDED_SETTINGS__='+safeSettings+';</script>';
   const out=html.replace(/<script>/i,boot+'<script>');
   const blob=new Blob([out],{type:"text/html;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="matsumoto_album_photo.html";a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-  alert("写真入りHTMLを作ったよ。『ファイルに保存』が表示されたら保存してね📦");
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="matsumoto_album_photo.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
 
 function updateCounts(){
   keys.forEach(k=>document.getElementById("count-"+k).textContent=data[k].length+"枚");
 }
 
-openDB().then(loadAll).catch(()=>{
-  alert("写真データの保存領域を開けませんでした。Safariのプライベートブラウズではなく通常モードで開いてみてね。");
-});
+async function startAlbum(){
+  bindInputs();
+  try{
+    await openDB();
+    await loadAll();
+  }catch(err){
+    console.error(err);
+    // Even if storage is unavailable, keep navigation and photo selection usable.
+    await renderCovers();
+    updateCounts();
+  }
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",startAlbum);
+}else{
+  startAlbum();
+}
 </script>
 </body>
 </html>
