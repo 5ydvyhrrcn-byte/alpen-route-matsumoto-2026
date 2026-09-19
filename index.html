@@ -58,7 +58,7 @@ footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
 </header>
 
 <main>
-<div id="home" class="page active">
+<div id="home" class="page active"><div style="text-align:center;font-size:12px;color:#6f7772;margin:0 0 12px">📷 写真はGitHubで共有しています</div>
 <div class="section-title">思い出を選んでね</div>
 <div class="categories">
   <div class="category" onclick="openCategory('castle')">
@@ -97,6 +97,15 @@ footer{text-align:center;padding:5px 15px 30px;font-size:11px;color:#8b918e}
 const keys=["castle","kai","alpen","other"];
 let data={castle:[],kai:[],alpen:[],other:[]};
 
+// GitHubに置いた写真を、どの端末からでも読めるようにする設定
+const GH_OWNER="5ydvyhrrcn-byte";
+const GH_REPO="alpen-route-matsumoto-2026";
+const GH_BRANCH="main";
+const GH_API=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/`;
+const GH_RAW=`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/`;
+let sharedData={castle:[],kai:[],alpen:[],other:[]};
+let sharedCover="";
+
 const DB_NAME="matsumoto_album_db";
 const DB_VERSION=1;
 let db;
@@ -127,6 +136,32 @@ function idbSet(store,key,value){
     req.onerror=()=>reject(req.error);
   });
 }
+async function loadSharedPhotos(){
+  try{
+    const res=await fetch(GH_API,{cache:"no-store"});
+    if(!res.ok) throw new Error("GitHub写真一覧を取得できませんでした");
+    const files=await res.json();
+    const images=files.filter(f=>f.type==="file" && /\.(jpe?g|png|webp)$/i.test(f.name));
+    const sortNum=(name)=>Number((name.match(/^[1-5]-(\d+)/)||[])[1]||99999);
+
+    for(const f of images){
+      const m=f.name.match(/^([1-5])-(\d+)\.(jpe?g|png|webp)$/i);
+      if(!m) continue;
+      const group=m[1];
+      const item={src:GH_RAW+encodeURIComponent(f.name),title:"",note:"",shared:true,name:f.name};
+      if(group==="1"){
+        if(!sharedCover) sharedCover=item.src;
+      }else if(group==="2") sharedData.castle.push(item);
+      else if(group==="3") sharedData.alpen.push(item);
+      else if(group==="4") sharedData.kai.push(item);
+      else if(group==="5") sharedData.other.push(item);
+    }
+    for(const k of keys) sharedData[k].sort((a,b)=>sortNum(a.name)-sortNum(b.name));
+  }catch(e){
+    console.warn("GitHub写真の読み込みに失敗:",e);
+  }
+}
+
 async function loadAll(){
   for(const k of keys){
     const saved=await idbGet("photos",k);
@@ -138,6 +173,14 @@ async function loadAll(){
       }catch(e){}
     }
   }
+
+  await loadSharedPhotos();
+
+  // GitHub側に写真があるカテゴリは、それを共通アルバムとして表示。
+  for(const k of keys){
+    if(sharedData[k].length) data[k]=sharedData[k];
+  }
+
   const memorySaved=await idbGet("settings","memory");
   const memory=document.getElementById("memory");
   memory.value=memorySaved ?? localStorage.getItem("matsumoto_memory") ?? "";
@@ -149,7 +192,7 @@ async function loadAll(){
   for(const k of keys){
     const ck="cover_"+k;
     if(!(await idbGet("settings",ck)) && localStorage.getItem("matsumoto_cover_"+k))
-      await idbSet("settings",ck,localStorage.getItem("matsumoto_cover_"+k));
+      await idbSet("settings","cover_"+k,localStorage.getItem("matsumoto_cover_"+k));
   }
   await renderCovers();
   updateCounts();
@@ -194,11 +237,12 @@ function chooseCategoryCover(k){
 async function renderCovers(){
   const cover=await idbGet("settings","cover");
   const area=document.getElementById("coverArea");
-  if(cover) area.outerHTML='<img id="coverArea" src="'+cover+'" alt="松本の表紙写真">';
+  const coverSrc=sharedCover || cover;
+  if(coverSrc) area.outerHTML='<img id="coverArea" src="'+coverSrc+'" alt="松本の表紙写真">';
   else area.innerHTML="表紙になる写真を入れてね 📷";
   for(const k of keys){
     const box=document.getElementById(k+"Cover");
-    const src=await idbGet("settings","cover_"+k);
+    const src=sharedData[k].length ? sharedData[k][0].src : await idbGet("settings","cover_"+k);
     box.innerHTML=src?'<img src="'+src+'" alt="">':'<div class="category-placeholder">入口の写真を入れてね 📷</div>';
   }
 }
@@ -216,8 +260,22 @@ function render(k){
   const album=document.getElementById(k+"Album"),empty=document.getElementById(k+"Empty");
   album.innerHTML="";empty.style.display=data[k].length?"none":"block";
   data[k].forEach((p,i)=>{
-    const c=document.createElement("article"),img=document.createElement("img"),info=document.createElement("div");
-    c.className="card";img.className="photo";img.src=p.src;img.alt="松本の写真";info.className="info";
+    const c=document.createElement("article"),img=document.createElement("img");
+    c.className="card";img.className="photo";img.src=p.src;img.alt="松本の写真";
+    c.append(img);
+
+    if(p.shared){
+      const label=document.createElement("div");
+      label.className="info";
+      label.textContent=p.name||"";
+      label.style.color="#777";
+      label.style.fontSize="11px";
+      c.append(label);
+      album.append(c);
+      return;
+    }
+
+    const info=document.createElement("div");info.className="info";
     const title=document.createElement("input"),note=document.createElement("input");
     title.placeholder="タイトル";title.value=p.title||"";
     note.placeholder="ひとことメモ";note.value=p.note||"";
@@ -231,7 +289,7 @@ function render(k){
         data[k].splice(i,1);await save(k);render(k);
       }
     };
-    acts.append(rep,del);info.append(title,note,acts);c.append(img,info);album.append(c);
+    acts.append(rep,del);info.append(title,note,acts);c.append(info);album.append(c);
   });
   updateCounts();
 }
